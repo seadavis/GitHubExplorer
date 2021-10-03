@@ -10,4 +10,8 @@
     <PackageReference Include="Octokit" Version="0.50.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
 </Project>

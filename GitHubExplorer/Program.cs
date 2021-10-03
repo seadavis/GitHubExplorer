@@ -21,9 +21,7 @@ namespace GitHubExplorer
             Language = Language.CSharp,
          });
 
-         List<RepositoryContent> testDirectories = new List<RepositoryContent>();
          int testLines = 0;
-
          for (int i = 0; i < 1; i++)
          {
 
