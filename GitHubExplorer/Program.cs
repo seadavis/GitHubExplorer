@@ -15,6 +15,8 @@ namespace GitHubExplorer
       static async Task Main(string[] args)
       {
          var github = CreateGitHubClient(args[0], args[1]);
+         var numberOfResponsesToParse = int.Parse(args[3]);
+
          var searchResult = await github.Search.SearchRepo(new SearchRepositoriesRequest()
          {
             User = "AutoMapper",
@@ -22,7 +24,7 @@ namespace GitHubExplorer
          });
 
          int testLines = 0;
-         for (int i = 0; i < 1; i++)
+         for (int i = 0; i < searchResult.Items.Count && i < numberOfResponsesToParse; i++)
          {
 
             var repo = searchResult.Items[i];
