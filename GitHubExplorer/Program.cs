@@ -28,6 +28,7 @@ namespace GitHubExplorer
             SortField = RepoSearchSort.Stars
          });
 
+         
 
          var results = await AnalyzeRepos(searchResult.Items, rootFolder, numberOfResponsesToParse, degreeOfParallelism);
          Console.WriteLine($"Results: {JsonConvert.SerializeObject(results)}");
@@ -88,40 +89,40 @@ namespace GitHubExplorer
       /// <returns>the results of the repo analysis.</returns>
       public static async Task<RepoAnalysisResults> AnalyzeRepo(Repository repo, string rootFolder)
       {        
-            var folder = await CloneRepo(repo, rootFolder);
+          
+         var folder = await CloneRepo(repo, rootFolder);
 
-            int testLines = 0;
-            int nonTestLines = 0;
+         int testLines = 0;
+         int nonTestLines = 0;
 
-            if (folder != null)
-            {
-               Console.WriteLine($"Getting Test Files For: {repo.Name}");
-               var testFilesTask = GetTestFiles(folder);
+         if (folder != null)
+         {
+            Console.WriteLine($"Getting Test Files For: {repo.Name}");
+            var testFilesTask = GetTestFiles(folder);
 
+            Console.WriteLine($"Getting Non Test Files For: {repo.Name}");
+            var nonTestFilesTask = GetNonTestFiles(folder);
 
-               Console.WriteLine($"Getting Non Test Files For: {repo.Name}");
-               var nonTestFilesTask = GetNonTestFiles(folder);
+            await Task.WhenAll(testFilesTask, nonTestFilesTask);
 
-               await Task.WhenAll(testFilesTask, nonTestFilesTask);
+            var testFiles = await testFilesTask;
+            var nonTestFiles = await nonTestFilesTask;
 
-               var testFiles = await testFilesTask;
-               var nonTestFiles = await nonTestFilesTask;
+            Console.WriteLine($"Counting Lines For: {repo.Name}");
+            var testLinesTask = CountLines(testFiles);
+            var nonTestLinesTask = CountLines(nonTestFiles);
 
-               Console.WriteLine($"Counting Lines For: {repo.Name}");
-               var testLinesTask = CountLines(testFiles);
-               var nonTestLinesTask = CountLines(nonTestFiles);
+            testLines = await testLinesTask;
+            nonTestLines = await nonTestLinesTask;
+            await Task.WhenAll(testLinesTask, nonTestLinesTask);
+         }
 
-               testLines = await testLinesTask;
-               nonTestLines = await nonTestLinesTask;
-               await Task.WhenAll(testLinesTask, nonTestLinesTask);
-            }
+         Console.WriteLine($"Deleting Temp Directory: {repo.Name}");
+         DeleteDirectory(folder);
 
-            Console.WriteLine($"Deleting Temp Directory: {repo.Name}");
-            DeleteDirectory(folder);
-
-            return new RepoAnalysisResults(repo.Name, repo.Url, testLines, nonTestLines);
+         return new RepoAnalysisResults(repo.Name, repo.Url, testLines, nonTestLines);
          
-      }
+   }
 
       public static void DeleteDirectory(string target_dir)
       {
